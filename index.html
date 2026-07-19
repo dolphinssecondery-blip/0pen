@@ -3,54 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>project 0qx</title>
+    <title>Het Ultieme Raadsel Avontuur</title>
     <style>
-       
         body {
-            margin: 0;
-            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e24;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f2f5; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
         }
-
-        
-        .magic-button {
-            display: inline-block;
-            padding: 20px 40px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffffff;
-            background-color: #ff4757; 
+        .container {
+            background-color: #2a2a35;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1, h2 { color: #4caf50; }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #444;
+            border-radius: 6px;
+            background-color: #1e1e24;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
             border: none;
-            border-radius: 50px; 
-            text-decoration: none; 
-            box-shadow: 0 10px 20px rgba(255, 71, 87, 0.3);
-            transition: all 0.3s ease;
+            padding: 12px 20px;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
         }
-
-        
-        .magic-button:hover {
-            transform: translateY(-3px); 
-            box-shadow: 0 15px 25px rgba(255, 71, 87, 0.5);
-            background-color: #ff6b81;
+        button:hover { background-color: #45a049; }
+        .secondary-btn {
+            background-color: #555;
+            margin-top: 5px;
         }
-
-       
-        .magic-button:active {
-            transform: translateY(1px);
-            box-shadow: 0 5px 10px rgba(255, 71, 87, 0.3);
+        .secondary-btn:hover { background-color: #666; }
+        .hint-btn {
+            background-color: #ff9800;
+            margin-top: 10px;
         }
+        .hint-btn:hover { background-color: #e68a00; }
+        .hidden { display: none; }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold;
+            background: #1e1e24;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .story {
+            text-align: left;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-style: italic;
+            background: #333344;
+            padding: 15px;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+        }
+        .feedback { margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    
-    <a href="https://www.sex.com/en/gifs/144351?utm_source=direct&utm_medium=shared-link-from-gif-viewer" class="magic-button">Click here</a>
+<div class="container">
+    <!-- AUTHENTICATIE SCHERM -->
+    <div id="auth-screen">
+        <h1 id="auth-title">Inloggen</h1>
+        <input type="text" id="username" placeholder="Gebruikersnaam">
+        <input type="password" id="password" placeholder="Wachtwoord">
+        <button id="main-auth-btn" onclick="handleAuth()">Log In</button>
+        <button class="secondary-btn" id="toggle-auth-btn" onclick="toggleAuthMode()">Nog geen account? Registreer hier</button>
+        <p class="feedback" id="auth-feedback"></p>
+    </div>
+
+    <!-- GAME SCHERM -->
+    <div id="game-screen" class="hidden">
+        <h1>Raadsel Avontuur</h1>
+        <div class="stats">
+            <div>Speler: <span id="display-username">?</span></div>
+            <div>Level: <span id="display-level">1</span></div>
+            <div>Punten: <span id="display-points">0</span></div>
+        </div>
+        
+        <h2>Het Verhaal:</h2>
+        <div class="story" id="riddle-story">Laden...</div>
+
+        <input type="text" id="answer-input" placeholder="Jouw antwoord...">
+        <button onclick="submitAnswer()">Antwoord Insturen</button>
+        <button class="hint-btn" onclick="getHint()">Koop Hint (Kost 1 Punt)</button>
+        <button class="secondary-btn" onclick="logout()">Uitloggen</button>
+        
+        <p class="feedback" id="game-feedback"></p>
+    </div>
+</div>
+
+<script>
+    // Database met verhalende raadsels die oplopen in moeilijkheid
+    const riddleDatabase = [
+        {
+            level: 1,
+            story: "Je staat voor een zware, ijzeren deur in een kerker. Er hangt geen lamp, er is geen raam en er kiert nergens licht tussendoor. Je kunt werkelijk helemaal hand voor ogen zien. Welk woord beschrijft de toestand van deze kamer?",
+            answers: ["duister", "donker", "duisternis", "zwart", "onzichtbaar"],
+            hint: "Het is het tegenovergestelde van licht."
+        },
+        {
+            level: 2,
+            story: "Een reiziger loopt door een verzengde woestijn en vindt een oude tempel. Binnen liggen drie voorwerpen op een altaar: een olielamp zonder olie, een kaars zonder lont, en een droge fakkel. De reiziger heeft maar één lucifer bij zich om licht te maken. Wat moet hij als allereerste aansteken om te overleven?",
+            answers: ["lucifer", "de lucifer", "het vuur", "de luciferdoos"],
+            hint: "Wat heeft hij in zijn hand voordat hij de rest kan aansteken?"
+        },
+        {
+            level: 3,
+            story: "Een dief breekt in bij een kasteel. Hij komt in een kamer met twee deuren. Achter deur A zit een magische vuurzee die alles direct as maakt. Achter deur B zit een gigantische, bloeddorstige leeuw die al meer dan een jaar absoluut niets gegeten heeft. De dief kiest slim en overleeft het zonder een schrammetje. Welke deur koos hij en waarom?",
+            answers: ["b", "deur b", "leeuw", "leeuw is dood", "dood", "gestorven"],
+            hint: "Wat gebeurt er met een levend wezen dat een jaar lang niet eet?"
+        },
+        {
+            level: 4,
+            story: "Een detective betreedt een afgesloten, lege kamer. In het midden hangt een man aan het plafond, gestorven door ophanging. De kamer is volledig leeg: geen stoelen, geen ladders, geen tafels. Het enige dat op de betonnen vloer ligt, is een grote plas water direct onder de voeten van de man. Hoe is de man daar omhoog gekomen?",
+            answers: ["ijs", "blok ijs", "smelten", "gesmolten ijs", "ijskont"],
+            hint: "Wat was die plas water voordat het water werd?"
+        }
+    ];
+
+    let isLoginMode = true;
+    let currentUser = null;
+
+    // Wisselen tussen Inloggen en Registreren
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById("auth-title").innerText = isLoginMode ? "Inloggen" : "Account Maken";
+        document.getElementById("main-auth-btn").innerText = isLoginMode ? "Log In" : "Registreer Account";
+        document.getElementById("toggle-auth-btn").innerText = isLoginMode ? "Nog geen account? Registreer hier" : "Al een account? Log hier in";
+        document.getElementById("auth-feedback").innerText = "";
+    }
+
+    // Account afhandeling (Login / Registratie via LocalStorage)
+    function handleAuth() {
+        const user = document.getElementById("username").value.trim().toLowerCase();
+        const pass = document.getElementById("password").value;
+        const feedback = document.getElementById("auth-feedback");
+
+        if (!user || !pass) {
+            feedback.style.color = "red";
+            feedback.innerText = "Vul alle velden in!";
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem("riddle_game_users")) || {};
+
+        if (isLoginMode) {
+            // Login check
+            if (users[user] && users[user].password === pass) {
+                currentUser = user;
+                loadGame();
+            } else {
+                feedback.style.color = "red";
+                feedback.innerText = "Onjuiste gebruikersnaam of wachtwoord.";
+            }
+        } else {
+            // Registratie check
+            if (users[user]) {
+                feedback.style.color = "red";
+                feedback.innerText = "Deze gebruikersnaam bestaat al.";
+            } else {
+                users[user] = {
+                    password: pass,
+                    level: 1,
+                    points: 0
+                };
+                localStorage.setItem("riddle_game_users", JSON.stringify(users));
+                feedback.style.color = "#4caf50";
+                feedback.innerText = "Account succesvol gemaakt! Je kunt nu inloggen.";
+                toggleAuthMode();
+            }
+        }
+    }
+
+    // Laad het spel voor de ingelogde gebruiker
+    function loadGame() {
+        document.getElementById("auth-screen").classList.add("hidden");
+        document.getElementById("game-screen").classList.remove("hidden");
+        
+        let users = JSON.parse(localStorage.getItem("riddle_game_users"));
+        let userData = users[currentUser];
+
+        document.getElementById("display-username").innerText = currentUser;
+        document.getElementById("display-level").innerText = userData.level;
+        document.getElementById("display-points").innerText = userData.points;
+        
+        document.getElementById("game-feedback").innerText = "";
+        document.getElementById("answer-input").value = "";
+
+        showRiddle(userData.level);
+    }
+
+    // Toon het juiste raadsel op basis van level
+    function showRiddle(level) {
+        const riddleElement = document.getElementById("riddle-story");
+        // Als speler verder is dan de database, maken we een oneindig procedureel level
+        if (level > riddleDatabase.length) {
+            riddleElement.innerText = `[Level ${level}] Je bent diep in de oneindige kerker. De magische sfeer vereist een geheim wachtwoord dat continu verandert. Typ het magische woord 'voltooid' (of 'klaar') om deze oneindige simulatie te temmen!`;
+        } else {
+            const currentRiddle = riddleDatabase[level - 1];
+            riddleElement.innerText = currentRiddle.story;
+        }
+    }
+
+    // Antwoord controleren (inclusief synoniemen)
+    function submitAnswer() {
+        const input = document.getElementById("answer-input").value.trim().toLowerCase();
+        const gameFeedback = document.getElementById("game-feedback");
+        
+        let users = JSON.parse(localStorage.getItem("riddle_game_users"));
+        let userData = users[currentUser];
+        let currentLevel = userData.level;
+
+        if (!input) return;
+
+        let isCorrect = false;
+
+        if (currentLevel > riddleDatabase.length) {
+            // Oneindige levels opvangen
+            if (input === "voltooid" || input === "klaar" || input === "finish") {
+                isCorrect = true;
+            }
+        } else {
+            // Checken in de lijst met toegestane synoniemen
+            const allowedAnswers = riddleDatabase[currentLevel - 1].answers;
+            if (allowedAnswers.some(answer => input.includes(answer) || answer.includes(input))) {
+                isCorrect = true;
+            }
+        }
+
+        if (isCorrect) {
+            userData.points += 1;
+            userData.level += 1;
+            users[currentUser] = userData;
+            localStorage.setItem("riddle_game_users", JSON.stringify(users));
+            
+            gameFeedback.style.color = "#4caf50";
+            gameFeedback.innerText = "Goed zo! Dat is het juiste antwoord. +1 Punt!";
+            
+            setTimeout(loadGame, 1500); // Laad volgende level na 1.5 seconde
+        } else {
+            gameFeedback.style.color = "red";
+            gameFeedback.innerText = "Helaas, dat is niet het juiste antwoord. Probeer het nog eens!";
+        }
+    }
+
+    // Hint kopen met punten
+    function getHint() {
+        const gameFeedback = document.getElementById("game-feedback");
+        let users = JSON.parse(localStorage.getItem("riddle_game_users"));
+        let userData = users[currentUser];
+
+        if (userData.points < 1) {
+            gameFeedback.style.color = "red";
+            gameFeedback.innerText = "Je hebt niet genoeg punten voor een hint! Verdien eerst punten.";
+            return;
+        }
+
+        userData.points -= 1;
+        users[currentUser] = userData;
+        localStorage.setItem("riddle_game_users", JSON.stringify(users));
+        
+        document.getElementById("display-points").innerText = userData.points;
+
+        if (userData.level > riddleDatabase.length) {
+            gameFeedback.style.color = "#ff9800";
+            gameFeedback.innerText = "Hint: Het antwoord is 'voltooid'.";
+        } else {
+            gameFeedback.style.color = "#ff9800";
+            gameFeedback.innerText = "Hint: " + riddleDatabase[userData.level - 1].hint;
+        }
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById("game-screen").classList.add("hidden");
+        document.getElementById("auth-screen").classList.remove("hidden");
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+        document.getElementById("auth-feedback").innerText = "";
+    }
+</script>
 
 </body>
 </html>
