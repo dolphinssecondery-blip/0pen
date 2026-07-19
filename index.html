@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Het Ultieme Raadsel Avontuur</title>
+    <title>Het Oneindige Raadsel Avontuur</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,7 +21,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             text-align: center;
         }
         h1, h2 { color: #4caf50; }
@@ -57,7 +57,7 @@
             margin-top: 10px;
         }
         .hint-btn:hover { background-color: #e68a00; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .stats {
             display: flex;
             justify-content: space-between;
@@ -106,8 +106,8 @@
         <div class="story" id="riddle-story">Laden...</div>
 
         <input type="text" id="answer-input" placeholder="Jouw antwoord...">
-        <button onclick="submitAnswer()">Antwoord Insturen</button>
-        <button class="hint-btn" onclick="getHint()">Koop Hint (Kost 1 Punt)</button>
+        <button id="submit-btn" onclick="submitAnswer()">Antwoord Insturen</button>
+        <button id="hint-btn" class="hint-btn" onclick="getHint()">Koop Hint (Kost 1 Punt)</button>
         <button class="secondary-btn" onclick="logout()">Uitloggen</button>
         
         <p class="feedback" id="game-feedback"></p>
@@ -115,36 +115,63 @@
 </div>
 
 <script>
-    // Database met verhalende raadsels die oplopen in moeilijkheid
+    // Handgemaakte database voor de eerste 10 levels
     const riddleDatabase = [
         {
-            level: 1,
-            story: "Je staat voor een zware, ijzeren deur in een kerker. Er hangt geen lamp, er is geen raam en er kiert nergens licht tussendoor. Je kunt werkelijk helemaal hand voor ogen zien. Welk woord beschrijft de toestand van deze kamer?",
+            story: "Je staat voor een zware, ijzeren deur in een kerker. Er hangt geen lamp, er is geen raam en er kiert nergens licht tussendoor. Je kunt werkelijk helemaal hand voor ogen niet zien. Welk woord beschrijft de toestand van deze kamer?",
             answers: ["duister", "donker", "duisternis", "zwart", "onzichtbaar"],
             hint: "Het is het tegenovergestelde van licht."
         },
         {
-            level: 2,
             story: "Een reiziger loopt door een verzengde woestijn en vindt een oude tempel. Binnen liggen drie voorwerpen op een altaar: een olielamp zonder olie, een kaars zonder lont, en een droge fakkel. De reiziger heeft maar één lucifer bij zich om licht te maken. Wat moet hij als allereerste aansteken om te overleven?",
-            answers: ["lucifer", "de lucifer", "het vuur", "de luciferdoos"],
-            hint: "Wat heeft hij in zijn hand voordat hij de rest kan aansteken?"
+            answers: ["lucifer", "de lucifer", "zijn lucifer"],
+            hint: "Wat heeft hij al in zijn hand voordat hij de rest kan aansteken?"
         },
         {
-            level: 3,
-            story: "Een dief breekt in bij een kasteel. Hij komt in een kamer met twee deuren. Achter deur A zit een magische vuurzee die alles direct as maakt. Achter deur B zit een gigantische, bloeddorstige leeuw die al meer dan een jaar absoluut niets gegeten heeft. De dief kiest slim en overleeft het zonder een schrammetje. Welke deur koos hij en waarom?",
-            answers: ["b", "deur b", "leeuw", "leeuw is dood", "dood", "gestorven"],
+            story: "Een dief breekt in bij een kasteel. Hij komt in een kamer met twee deuren. Achter deur A zit een magische vuurzee die alles direct as maakt. Achter deur B zit een gigantische, bloeddorstige leeuw die al meer dan een jaar absoluut niets gegeten heeft. De dief kiest slim und overleeft het zonder een schrammetje. Welke deur koos hij en waarom?",
+            answers: ["b", "deur b", "leeuw", "leeuw is dood", "dood"],
             hint: "Wat gebeurt er met een levend wezen dat een jaar lang niet eet?"
         },
         {
-            level: 4,
-            story: "Een detective betreedt een afgesloten, lege kamer. In het midden hangt een man aan het plafond, gestorven door ophanging. De kamer is volledig leeg: geen stoelen, geen ladders, geen tafels. Het enige dat op de betonnen vloer ligt, is een grote plas water direct onder de voeten van de man. Hoe is de man daar omhoog gekomen?",
-            answers: ["ijs", "blok ijs", "smelten", "gesmolten ijs", "ijskont"],
-            hint: "Wat was die plas water voordat het water werd?"
+            story: "Een detective betreedt een afgesloten, lege kamer. In het midden hangt een man aan het plafond. De kamer is volledig leeg: geen stoelen, geen ladders, geen tafels. Het enige dat op de betonnen vloer ligt, is een grote plas water direct onder de voeten van de man. Hoe is de man daar omhoog gekomen?",
+            answers: ["ijs", "blok ijs", "smelten", "gesmolten ijs"],
+            hint: "Wat was die plas water vroeger, toen het nog hard bevroren was?"
+        },
+        {
+            story: "Je bevindt je in een uitgestrekt woud, waar de bomen buigen alsof ze gedwongen worden. Je hoort iemand huilen, maar er is geen stem te bekennen. Je voelt het langs je wangen strijken, maar vleugels of armen heeft het niet. Zodra het bos stopt, verdwijnt het in het niets. Wie of wat is dit?",
+            answers: ["wind", "de wind", "lucht", "storm"],
+            hint: "Je voelt het als je buiten fietst."
+        },
+        {
+            story: "In een oude bibliotheek vind je een zwevend perkament. Er staat een boodschap in runen geschreven: 'Als je me hebt, wil je me delen. Maar zodra je mij daadwerkelijk deelt met iemand anders, besta ik niet meer.' Wat is dit vluchtige ding?",
+            answers: ["geheim", "een geheim", "het geheim"],
+            hint: "Je mag dit eigenlijk niet doorvertellen."
+        },
+        {
+            story: "Een koning wil zijn schatkamer beveiligen met een onzichtbare wachter. Deze wachter is ongelooflijk breekbaar. In feite is hij zo zwak, dat zodra een dief zijn mond opendoet en slechts één woord uitspreekt, de wachter onmiddellijk sterft en verdwijnt. Wie is deze wachter?",
+            answers: ["stilte", "de stilte", "rust"],
+            hint: "Ssst! Niet praten!"
+        },
+        {
+            story: "Je wordt door een doolhof achtervolgd door een duistere gedaante. In het donkerste deel van de kerker raak je hem kwijt, maar zodra je met je fakkel in de buurt van een muur komt, duikt hij weer op, donkerder en groter dan ooit. Hij loopt precies zoals jij, maar hij spreekt nooit. Wat volgt je?",
+            answers: ["schaduw", "je schaduw", "mijn schaduw", "de schaduw"],
+            hint: "Kijk maar eens op de grond als de zon schijnt."
+        },
+        {
+            story: "In een magische grot schreeuw je om hulp. Een seconde later hoor je voetstappen, en hoor je iemand precies jouw woorden herhalen. Het wezen spreekt altijd zonder mond en hoort zonder oren. Het antwoordt op elke taal ter wereld, maar verzint nooit zelf een woord. Wat het?",
+            answers: ["echo", "een echo", "de echo"],
+            hint: "Hallooo... (hallooo... hallooo...)"
+        },
+        {
+            story: "De ultieme beproeving van de vaste levels. Er staat een gigantisch glas in het midden van de ruimte. Je kijkt ernaar en je ziet je ergste vijand en je beste vriend in één blik, afhankelijk van hoe je je voelt. Als je naar rechts stapt, stapt het ook. Het vertelt altijd de waarheid, tenzij het gebroken is. Wat is het?",
+            answers: ["spiegel", "een spiegel", "de spiegel", "spiegelbeeld"],
+            hint: "Je kijkt hierin als je je haren kamt."
         }
     ];
 
     let isLoginMode = true;
     let currentUser = null;
+    let currentActiveRiddle = null; // Slaat het huidige (al dan niet gegenereerde) raadsel op
 
     // Wisselen tussen Inloggen en Registreren
     function toggleAuthMode() {
@@ -155,7 +182,7 @@
         document.getElementById("auth-feedback").innerText = "";
     }
 
-    // Account afhandeling (Login / Registratie via LocalStorage)
+    // Account afhandeling (Login / Registratie)
     function handleAuth() {
         const user = document.getElementById("username").value.trim().toLowerCase();
         const pass = document.getElementById("password").value;
@@ -170,7 +197,6 @@
         let users = JSON.parse(localStorage.getItem("riddle_game_users")) || {};
 
         if (isLoginMode) {
-            // Login check
             if (users[user] && users[user].password === pass) {
                 currentUser = user;
                 loadGame();
@@ -179,25 +205,20 @@
                 feedback.innerText = "Onjuiste gebruikersnaam of wachtwoord.";
             }
         } else {
-            // Registratie check
             if (users[user]) {
                 feedback.style.color = "red";
                 feedback.innerText = "Deze gebruikersnaam bestaat al.";
             } else {
-                users[user] = {
-                    password: pass,
-                    level: 1,
-                    points: 0
-                };
+                users[user] = { password: pass, level: 1, points: 0 };
                 localStorage.setItem("riddle_game_users", JSON.stringify(users));
                 feedback.style.color = "#4caf50";
-                feedback.innerText = "Account succesvol gemaakt! Je kunt nu inloggen.";
+                feedback.innerText = "Account gemaakt! Log nu in.";
                 toggleAuthMode();
             }
         }
     }
 
-    // Laad het spel voor de ingelogde gebruiker
+    // Laad het spel en bereken het level
     function loadGame() {
         document.getElementById("auth-screen").classList.add("hidden");
         document.getElementById("game-screen").classList.remove("hidden");
@@ -212,45 +233,106 @@
         document.getElementById("game-feedback").innerText = "";
         document.getElementById("answer-input").value = "";
 
-        showRiddle(userData.level);
-    }
-
-    // Toon het juiste raadsel op basis van level
-    function showRiddle(level) {
-        const riddleElement = document.getElementById("riddle-story");
-        // Als speler verder is dan de database, maken we een oneindig procedureel level
-        if (level > riddleDatabase.length) {
-            riddleElement.innerText = `[Level ${level}] Je bent diep in de oneindige kerker. De magische sfeer vereist een geheim wachtwoord dat continu verandert. Typ het magische woord 'voltooid' (of 'klaar') om deze oneindige simulatie te temmen!`;
+        // Bepaal of we een vast raadsel pakken of er eentje genereren
+        if (userData.level <= riddleDatabase.length) {
+            currentActiveRiddle = riddleDatabase[userData.level - 1];
         } else {
-            const currentRiddle = riddleDatabase[level - 1];
-            riddleElement.innerText = currentRiddle.story;
+            currentActiveRiddle = generateProceduralRiddle(userData.level);
         }
+
+        document.getElementById("riddle-story").innerText = currentActiveRiddle.story;
     }
 
-    // Antwoord controleren (inclusief synoniemen)
+    // DE ONEINDIGE RAADSEL GENERATOR
+    // Genereert automatisch oneindig unieke verhalende raadsels die steeds moeilijker worden
+    function generateProceduralRiddle(level) {
+        // We berekenen een moeilijkheidsfactor op basis van het level
+        const difficulty = Math.floor(level / 3); 
+        
+        // Lijst met verschillende generators (Sjablonen)
+        const generators = [
+            // Sjabloon 1: De Dwergen Schatkamer (Wiskundige Logica)
+            function(lvl) {
+                const base = Math.floor(Math.random() * 10) + 5 + difficulty;
+                const extra = Math.floor(Math.random() * 8) + 2 + difficulty;
+                const vermenigvuldiger = Math.floor(Math.random() * 3) + 2;
+                const totaal = (base + (base + extra)) * vermenigvuldiger;
+
+                return {
+                    story: `[Level ${lvl} - De Dwergenkerker] Je betreedt een oneindige diepe gang en vindt de schatkamer van een dwergenkoning. Op een altaar staan twee kisten. Een inscriptie luidt: 'De linker kist bevat ${base} robijnen. De rechter kist bevat er exact ${extra} méér dan de linker kist. De magische code om de poort naar het volgende level te openen, is het totale aantal robijnen uit beide kisten samen, vermenigvuldigd met ${vermenigvuldiger}.' Wat is de geheime code?`,
+                    answers: [totaal.toString()],
+                    hint: `Bereken eerst de rechter kist (${base} + ${extra} = ${base + extra}). Tel ze samen op en vermenigvuldig dat getal met ${vermenigvuldiger}.`
+                };
+            },
+            
+            // Sjabloon 2: De Runenmuur (Logische Reeksen)
+            function(lvl) {
+                const stap = Math.floor(Math.random() * 4) + 2 + Math.floor(lvl / 8);
+                const start = Math.floor(Math.random() * 20);
+                const reeks = [start, start + stap, start + (stap * 2), start + (stap * 3)];
+                const antwoord = start + (stap * 4);
+
+                return {
+                    story: `[Level ${lvl} - De Runenmuur] Een gigantische poort verspert je weg. Op de poort lichten gloeiende magische getallen op in een mysterieuze volgorde: ${reeks.join(", ")}, ... De laatste rune is leeg en pulseert met paars licht. De poort eist het volgende logische getal in deze oneindige reeks om te openen. Welk getal vul je in?`,
+                    answers: [antwoord.toString()],
+                    hint: `Kijk goed naar de stappen tussen de getallen. Er wordt telkens exact ${stap} bij opgeteld.`
+                };
+            },
+
+            // Sjabloon 3: De Moerasheks en haar Monsters (Koppen en Poten Logica)
+            function(lvl) {
+                const koppen = Math.floor(Math.random() * 6) + 5 + difficulty;
+                // We kiezen een logisch aantal vierpotige wezens
+                const vierpotigen = Math.floor(Math.random() * 4) + 2 + Math.floor(difficulty / 2);
+                const tweepotigen = koppen - vierpotigen;
+                const poten = (tweepotigen * 2) + (vierpotigen * 4);
+
+                return {
+                    story: `[Level ${lvl} - Het Heksenmoeras] Je wordt omsingeld in het hol van een moerasheks. In de schaduw hoor je angstaanjagend gekrab. De heks lacht angstaanjagend en zegt: 'Ik hoor in totaal ${koppen} koppen ademen en ik tel ${poten} poten op de modderige grond. Mijn huisdieren zijn een mix van tweepotige goblins en vierpotige spinnenmonsters. Vertel mij exact hoeveel VIERPOTIGE spinnenmonsters hier zitten, of je wordt mijn avondeten!'`,
+                    answers: [vierpotigen.toString()],
+                    hint: `Als alle ${koppen} wezens 2 poten hadden, waren er ${koppen * 2} poten. Het aantal poten dat je overhoudt (${poten} minus ${koppen * 2}) moet verdeeld worden over de extra poten van de spinnenmonsters.`
+                };
+            },
+
+            // Sjabloon 4: De Alchemist (Vermenigvuldigings- en aftrekpuzzel)
+            function(lvl) {
+                const startDrank = Math.floor(Math.random() * 20) + 10;
+                const verdubbelingen = Math.floor(Math.random() * 2) + 2;
+                const gestolen = Math.floor(Math.random() * 5) + 2;
+                let eindTotaal = startDrank;
+                for(let i=0; i < verdubbelingen; i++) {
+                    eindTotaal = (eindTotaal * 2) - gestolen;
+                }
+
+                return {
+                    story: `[Level ${lvl} - Het Lab van de Alchemist] Je helpt een oude alchemist. Hij start met een brouwsel van ${startDrank} druppels elixer. Elke keer als hij het mengsel verhit, VERDUBBELT het aantal druppels direct, waarna er helaas direct daarna ${gestolen} druppels verdampen in de lucht. Hij verhit het mengsel in totaal exact ${verdubbelingen} keer achter elkaar. Hoeveel druppels elixer zitten er nu nog in zijn reageerbuis?`,
+                    answers: [eindTotaal.toString()],
+                    hint: `Doe de berekening stap voor stap ${verdubbelingen} keer: verdubbelen en er dan ${gestolen} vanaf trekken.`
+                };
+            }
+        ];
+
+        // Kies op basis van het level een willekeurig sjabloon uit de lijst
+        const gekozenIndex = (level + Math.floor(Math.random() * generators.length)) % generators.length;
+        return generators[gekozenIndex](level);
+    }
+
+    // Antwoord controleren
     function submitAnswer() {
         const input = document.getElementById("answer-input").value.trim().toLowerCase();
         const gameFeedback = document.getElementById("game-feedback");
         
         let users = JSON.parse(localStorage.getItem("riddle_game_users"));
         let userData = users[currentUser];
-        let currentLevel = userData.level;
 
         if (!input) return;
 
         let isCorrect = false;
 
-        if (currentLevel > riddleDatabase.length) {
-            // Oneindige levels opvangen
-            if (input === "voltooid" || input === "klaar" || input === "finish") {
-                isCorrect = true;
-            }
-        } else {
-            // Checken in de lijst met toegestane synoniemen
-            const allowedAnswers = riddleDatabase[currentLevel - 1].answers;
-            if (allowedAnswers.some(answer => input.includes(answer) || answer.includes(input))) {
-                isCorrect = true;
-            }
+        // Controleer of de invoer overeenkomt met een van de goede antwoorden of synoniemen
+        const allowedAnswers = currentActiveRiddle.answers;
+        if (allowedAnswers.some(answer => input.includes(answer) || answer.includes(input))) {
+            isCorrect = true;
         }
 
         if (isCorrect) {
@@ -260,16 +342,16 @@
             localStorage.setItem("riddle_game_users", JSON.stringify(users));
             
             gameFeedback.style.color = "#4caf50";
-            gameFeedback.innerText = "Goed zo! Dat is het juiste antwoord. +1 Punt!";
+            gameFeedback.innerText = "Geweldig! Dat is helemaal juist. +1 Punt!";
             
-            setTimeout(loadGame, 1500); // Laad volgende level na 1.5 seconde
+            setTimeout(loadGame, 1500); // Laad het volgende oneindige level
         } else {
             gameFeedback.style.color = "red";
-            gameFeedback.innerText = "Helaas, dat is niet het juiste antwoord. Probeer het nog eens!";
+            gameFeedback.innerText = "Dat is niet het juiste antwoord. De kerker schudt op zijn grondvesten... Probeer het nog eens!";
         }
     }
 
-    // Hint kopen met punten
+    // Hint kopen
     function getHint() {
         const gameFeedback = document.getElementById("game-feedback");
         let users = JSON.parse(localStorage.getItem("riddle_game_users"));
@@ -277,7 +359,7 @@
 
         if (userData.points < 1) {
             gameFeedback.style.color = "red";
-            gameFeedback.innerText = "Je hebt niet genoeg punten voor een hint! Verdien eerst punten.";
+            gameFeedback.innerText = "Je hebt niet genoeg punten! Los eerst raadsels op zonder hulp.";
             return;
         }
 
@@ -287,15 +369,11 @@
         
         document.getElementById("display-points").innerText = userData.points;
 
-        if (userData.level > riddleDatabase.length) {
-            gameFeedback.style.color = "#ff9800";
-            gameFeedback.innerText = "Hint: Het antwoord is 'voltooid'.";
-        } else {
-            gameFeedback.style.color = "#ff9800";
-            gameFeedback.innerText = "Hint: " + riddleDatabase[userData.level - 1].hint;
-        }
+        gameFeedback.style.color = "#ff9800";
+        gameFeedback.innerText = "Hint: " + currentActiveRiddle.hint;
     }
 
+    // Uitloggen
     function logout() {
         currentUser = null;
         document.getElementById("game-screen").classList.add("hidden");
